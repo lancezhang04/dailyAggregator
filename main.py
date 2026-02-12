@@ -1,21 +1,67 @@
 import os
-
 from dotenv import load_dotenv
-from openai import OpenAI
 
-from notion_api import add_notion_page
-from testing.recording_test import record_audio
-from testing.whisper_test import extract_task_from_text, transcribe_audio
+from recorder import AudioRecorder
+from apis.openai_api import OpenAIClient
+from apis.notion_api import NotionClient
+from apis.gmail_api import GmailClient
+from task_aggregator import TaskAggregator
 
-load_dotenv()
+
+def record_and_add_task():
+    """Records audio, transcribes it, extracts a task, and adds it to Notion."""
+    recorder = AudioRecorder()
+    openai_client = OpenAIClient()
+    notion_client = NotionClient()
+
+    print("--- New Task Recording ---")
+    try:
+        audio_file = recorder.record()
+        if audio_file:
+            transcription = openai_client.transcribe_audio(audio_file)
+            print(f"Transcription: {transcription}")
+
+            task = openai_client.extract_task(transcription)
+            print(f"Extracted Task: {task.task_name}")
+
+            notion_client.add_task(task)
+            print("Task added to Notion.")
+    except Exception as e:
+        print(f"Error in task recording/adding: {e}")
 
 
-openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-record_audio()
-transcription = transcribe_audio(openai_client)
-print(f"transcription: {transcription}")
-task = extract_task_from_text(transcription, openai_client)
+def aggregate_and_email_tasks():
+    """Fetches pending tasks from Notion, summarizes them, and emails the report."""
+    openai_client = OpenAIClient()
+    notion_client = NotionClient()
+    gmail_client = GmailClient()  # Mandatory now
 
-print("adding notion page...")
-add_notion_page(task)
-print("complete, page created:")
+    print("\n--- Daily Task Aggregation ---")
+    try:
+        aggregator = TaskAggregator(notion_client, openai_client, gmail_client)
+        report = aggregator.generate_report()
+
+        print("\nExecutive Summary:")
+        print("-" * 20)
+        print(report)
+        print("-" * 20)
+
+        recipient = os.getenv("REPORT_RECIPIENT_EMAIL")
+        if recipient:
+            aggregator.email_report(recipient, report)
+        else:
+            print("\nError: REPORT_RECIPIENT_EMAIL not set in .env")
+    except Exception as e:
+        print(f"Error in task aggregation/emailing: {e}")
+
+
+def main():
+    load_dotenv()
+
+    # Choose which function to test/run
+    # record_and_add_task()
+    aggregate_and_email_tasks()
+
+
+if __name__ == "__main__":
+    main()
