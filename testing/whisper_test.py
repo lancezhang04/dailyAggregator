@@ -1,25 +1,19 @@
 from datetime import date
 import os
 
-from dotenv import load_dotenv
-from openai import OpenAI
-
 from task import NotionTask
 
 
-load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-audio_file = open('output.wav', 'rb')
+def transcribe_audio(client):
+    audio_file = open('output.wav', 'rb')
 
-transcription = client.audio.transcriptions.create(
-    model='gpt-4o-transcribe',
-    file=audio_file,
-)
-
-print(f'transcription result: {transcription}')
+    return client.audio.transcriptions.create(
+        model='gpt-4o-transcribe',
+        file=audio_file,
+    ).text
 
 
-def extract_task_from_text(user_input: str) -> NotionTask:
+def extract_task_from_text(user_input: str, client) -> NotionTask:
     completion = client.responses.parse(
         model=os.environ['OPENAI_MODEL'],
         instructions=f'You are a helpful assistant that extracts task details. Today is {date.today()}',
@@ -27,6 +21,3 @@ def extract_task_from_text(user_input: str) -> NotionTask:
         text_format=NotionTask,
     )
     return completion.output_parsed
-
-
-print(extract_task_from_text(transcription.text))

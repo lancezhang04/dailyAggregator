@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 class NotionTask(BaseModel):
     task_name: str = Field(description='A concise title for the task')
     status: str = Field(description="Should be 'Not started', 'In progress', or 'Done'")
-    task_types: list[str] = Field(description="Should be 'Personal', 'Entertainment', 'Logistics', 'Learning', 'Misc', 'Shopping', or 'Work'")
+    task_types: list[str] = Field(description="Should be 'Personal', 'Entertainment', 'Logistics', 'Learning', 'Misc', 'Shopping', 'Health', or 'Work'. All 'Work' tasks should be strictly related to my firm.")
     due_date: Optional[date] = Field(description='The deadline for the task in YYYY-MM-DD form. Optional field.')
 
     def to_notion_properties(self):
