@@ -1,22 +1,22 @@
 from datetime import date
 import os
 
-from task import NotionTask
+from models.task import NotionTask
 
 
 def transcribe_audio(client):
-    audio_file = open('output.wav', 'rb')
+    audio_file = open("output.wav", "rb")
 
     return client.audio.transcriptions.create(
-        model='gpt-4o-transcribe',
+        model="gpt-4o-transcribe",
         file=audio_file,
     ).text
 
 
 def extract_task_from_text(user_input: str, client) -> NotionTask:
     completion = client.responses.parse(
-        model=os.environ['OPENAI_MODEL'],
-        instructions=f'You are a helpful assistant that extracts task details. Today is {date.today()}',
+        model=os.environ["OPENAI_MODEL"],
+        instructions=f"You are a helpful assistant that extracts task details. Today is {date.today()}",
         input=user_input,
         text_format=NotionTask,
     )

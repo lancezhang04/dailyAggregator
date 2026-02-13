@@ -16,8 +16,8 @@ class GmailClient:
 
     def __init__(
         self,
-        credentials_path="testing/gmail_api/credentials.json",
-        token_path="testing/gmail_api/token.json",
+        credentials_path="playground/gmail_api/credentials.json",
+        token_path="playground/gmail_api/token.json",
     ):
         self.credentials_path = credentials_path
         self.token_path = token_path

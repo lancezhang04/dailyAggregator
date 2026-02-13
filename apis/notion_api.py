@@ -1,6 +1,6 @@
 import os
 from notion_client import Client
-from task import NotionTask
+from models.task import NotionTask
 
 
 class NotionClient:

@@ -3,7 +3,7 @@ from datetime import date
 from typing import List, Dict, Any
 from openai import OpenAI
 
-from task import NotionTask
+from models.task import NotionTask
 
 
 class OpenAIClient:
