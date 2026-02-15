@@ -3,10 +3,10 @@ openai
 google-api-python-client
 google-auth-oauthlib
 python-dotenv
-python-telegram-bot
 discord.py
 sounddevice
 numpy
 scipy
 websockets
 pyaudio
+pyyaml

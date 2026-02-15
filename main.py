@@ -3,8 +3,7 @@ import base64
 import json
 import time
 import datetime
-
-from blueprint_routine.blueprint_skills import gather_routine_information
+import os
 
 try:
     import pyaudio
@@ -46,9 +45,10 @@ def load_config():
             instructions = f.read()
 
         # Replace placeholders
+        current_date = datetime.datetime.now()
         instructions = instructions.replace(
             "{{today}}",
-            f"{datetime.datetime.now(), datetime.date.today().strftime('%A')}",
+            f"{current_date.strftime('%Y-%m-%d')}, {current_date.strftime('%A')}",
         )
         return tools, instructions
     except Exception as e:
@@ -61,9 +61,28 @@ async def send_audio(ws, stream, state):
     if not stream:
         print("Audio stream not initialized. Speech input will not be sent.")
         return
+
     print("Microphone active. Speak now...")
     try:
+        last_instructions_update = datetime.date.today()
+
         while not state.get("should_shutdown"):
+            # Check if we need to update instructions (day change)
+            today = datetime.date.today()
+            if today != last_instructions_update:
+                print(
+                    f"\n--- Day changed to {today}. Updating session instructions... ---"
+                )
+                _, instructions = load_config()
+                session_update = {
+                    "type": "session.update",
+                    "session": {
+                        "instructions": instructions,
+                    },
+                }
+                await ws.send(json.dumps(session_update))
+                last_instructions_update = today
+
             # Read audio data from stream
             data = await asyncio.to_thread(
                 stream.read, CHUNK_SIZE, exception_on_overflow=False
@@ -200,15 +219,8 @@ async def handle_tool_call(ws, item, state):
 
     print(f"\n[Tool Call] {name}: {arguments}")
 
-    # Map tool names to actual functions in skills.py
-    skill_map = {
-        "add_new_task": add_new_task,
-        "get_pending_tasks": get_pending_tasks,
-        "mark_task_as_done": mark_task_as_done,
-        "aggregate_and_email_tasks": aggregate_and_email_tasks,
-        "shutdown_agent": shutdown_agent,
-        "gather_routine_information": gather_routine_information,
-    }
+    # Map tool names to actual functions in skills
+    skill_map = SKILLS_MAP
 
     if name in skill_map:
         try:

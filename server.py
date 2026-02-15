@@ -1,8 +1,10 @@
 import os
+import asyncio
 import discord
 from discord.ext import commands
 import logging
 import json
+import datetime
 from datetime import date
 from dotenv import load_dotenv
 
@@ -52,11 +54,36 @@ def load_agent_config():
         instructions = f.read()
 
     # Replace placeholder
-    instructions = instructions.replace("{{today}}", str(date.today()))
+    current_date = datetime.datetime.now()
+    instructions = instructions.replace(
+        "{{today}}",
+        f"{current_date.strftime('%Y-%m-%d')}, {current_date.strftime('%A')}",
+    )
     return tools, instructions
 
 
+# Global config state
 TOOLS, INSTRUCTIONS = load_agent_config()
+LAST_CONFIG_UPDATE = date.today()
+
+
+def refresh_config_if_needed():
+    """Updates the global instructions if the day has changed."""
+    global TOOLS, INSTRUCTIONS, LAST_CONFIG_UPDATE
+    today = date.today()
+    if today != LAST_CONFIG_UPDATE:
+        logging.info(f"Day changed to {today}. Refreshing agent configuration...")
+        TOOLS, INSTRUCTIONS = load_agent_config()
+        LAST_CONFIG_UPDATE = today
+
+        # Update instructions in existing conversation histories
+        for user_id in conversation_history:
+            if (
+                conversation_history[user_id]
+                and conversation_history[user_id][0]["role"] == "system"
+            ):
+                conversation_history[user_id][0]["content"] = INSTRUCTIONS
+
 
 # Simple in-memory conversation history: {user_id: [messages]}
 conversation_history = {}
@@ -71,25 +98,25 @@ async def handle_tool_call(name, arguments):
     """Executes the corresponding skill based on the tool name."""
     logging.info(f"Executing tool: {name} with arguments: {arguments}")
 
-    if name == "add_new_task":
-        return skills.add_new_task(**arguments)
-    elif name == "get_pending_tasks":
-        return skills.get_pending_tasks()
-    elif name == "mark_task_as_done":
-        return skills.mark_task_as_done(**arguments)
-    elif name == "aggregate_and_email_tasks":
-        return skills.aggregate_and_email_tasks()
-    elif name == "gather_routine_information":
-        from blueprint_routine.blueprint_skills import gather_routine_information
+    if name == "shutdown_agent":
+        return "Junes is always active on the server, but tell Lance goodbye!"
 
-        return gather_routine_information(**arguments)
-    elif name == "shutdown_agent":
-        return "Bot is always active on the server, but I've noted you're heading out. Goodbye!"
+    if name in skills.SKILLS_MAP:
+        skill_func = skills.SKILLS_MAP[name]
+        try:
+            if asyncio.iscoroutinefunction(skill_func):
+                return await skill_func(**arguments)
+            else:
+                return skill_func(**arguments)
+        except Exception as e:
+            logging.error(f"Error executing skill {name}: {e}")
+            return f"Error executing skill {name}: {str(e)}"
     else:
         return f"Error: Unknown tool {name}"
 
 
 async def process_response(message, user_text: str):
+    refresh_config_if_needed()
     user_id = message.author.id
 
     if AUTHORIZED_USER_IDS and user_id not in AUTHORIZED_USER_IDS:

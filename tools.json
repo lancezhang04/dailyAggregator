@@ -65,5 +65,10 @@
     "name": "shutdown_agent",
     "description": "Ends the conversation and shuts down the agent.",
     "parameters": {"type": "object", "properties": {}}
+  },
+  {
+    "type": "function",
+    "name": "get_current_time",
+    "description": "Returns the current local time"
   }
 ]
