@@ -83,6 +83,9 @@ class NotionClient:
                     "due_date": due_date,
                 }
             )
+
+        # Sort tasks by due_date. Tasks with no due_date go to the end.
+        tasks.sort(key=lambda x: (x["due_date"] is None, x["due_date"]))
         return tasks
 
     def update_task_status(self, page_id: str, status: str):
