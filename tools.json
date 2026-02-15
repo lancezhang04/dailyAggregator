@@ -69,11 +69,28 @@
   {
     "type": "function",
     "name": "get_current_time",
-    "description": "Returns the current local time"
+    "description": "Returns the current local time",
+    "parameters": {"type": "object", "properties": {}}
   },
   {
     "type": "function",
     "name": "get_next_24hr_weather_forecast",
-    "description": "Returns the 24hr local weather forecast."
+    "description": "Returns the 24hr local weather forecast.",
+    "parameters": {"type": "object", "properties": {}}
+  },
+  {
+    "type": "function",
+    "name": "toggle_voice_mode",
+    "description": "Toggles whether Junes responds with voice messages on Discord.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "description": "True to enable voice messages, False to use text."
+        }
+      },
+      "required": ["enabled"]
+    }
   }
 ]

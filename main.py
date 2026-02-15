@@ -318,7 +318,7 @@ async def run_agent():
                 "session": {
                     "modalities": ["text", "audio"],
                     "instructions": instructions,
-                    "voice": "marin",
+                    "voice": os.environ["OPENAI_VOICE_MODEL"],
                     "input_audio_format": "pcm16",
                     "output_audio_format": "pcm16",
                     "input_audio_transcription": {"model": "whisper-1"},

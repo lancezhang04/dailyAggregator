@@ -1,9 +1,13 @@
 import os
 from datetime import date
 from typing import List, Dict, Any
+
+from dotenv import load_dotenv
 from openai import OpenAI
 
 from models.task import NotionTask
+
+load_dotenv()
 
 
 class OpenAIClient:
@@ -68,3 +72,22 @@ class OpenAIClient:
             messages=messages,
         )
         return response.choices[0].message.content
+
+    def generate_speech(
+        self,
+        text: str,
+        output_path: str,
+        voice: str = None,
+        response_format: str = "mp3",
+    ):
+        """Generates speech from text using OpenAI TTS."""
+        if voice is None:
+            voice = os.getenv("OPENAI_VOICE_MODEL_LEGACY", "nova")
+
+        response = self.client.audio.speech.create(
+            model="tts-1",
+            voice=voice,
+            input=text,
+            response_format=response_format,
+        )
+        response.write_to_file(output_path)

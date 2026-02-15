@@ -88,13 +88,16 @@ def refresh_config_if_needed():
 # Simple in-memory conversation history: {user_id: [messages]}
 conversation_history = {}
 
+# Voice mode state: {user_id: bool}
+voice_modes = {}
+
 # Initialize Discord Bot
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents)
 
 
-async def handle_tool_call(name, arguments):
+async def handle_tool_call(name, arguments, user_id=None):
     """Executes the corresponding skill based on the tool name."""
     logging.info(f"Executing tool: {name} with arguments: {arguments}")
 
@@ -105,9 +108,15 @@ async def handle_tool_call(name, arguments):
         skill_func = skills.SKILLS_MAP[name]
         try:
             if asyncio.iscoroutinefunction(skill_func):
-                return await skill_func(**arguments)
+                result = await skill_func(**arguments)
             else:
-                return skill_func(**arguments)
+                result = skill_func(**arguments)
+
+            # Special handling for server-side state
+            if name == "toggle_voice_mode" and user_id is not None:
+                voice_modes[user_id] = arguments.get("enabled", True)
+
+            return result
         except Exception as e:
             logging.error(f"Error executing skill {name}: {e}")
             return f"Error executing skill {name}: {str(e)}"
@@ -156,7 +165,9 @@ async def process_response(message, user_text: str):
                     function_name = tool_call.function.name
                     function_args = json.loads(tool_call.function.arguments)
 
-                    result = await handle_tool_call(function_name, function_args)
+                    result = await handle_tool_call(
+                        function_name, function_args, user_id=user_id
+                    )
 
                     conversation_history[user_id].append(
                         {
@@ -176,13 +187,43 @@ async def process_response(message, user_text: str):
                 conversation_history[user_id].append(
                     {"role": "assistant", "content": final_text}
                 )
-                await message.channel.send(final_text)
+
+                if voice_modes.get(user_id, False):
+                    audio_path = f"response_{user_id}.mp3"
+                    try:
+                        await asyncio.to_thread(
+                            openai_client.generate_speech,
+                            final_text,
+                            audio_path,
+                            response_format="mp3",
+                        )
+                        await message.channel.send(file=discord.File(audio_path))
+                    finally:
+                        if os.path.exists(audio_path):
+                            os.remove(audio_path)
+                else:
+                    await message.channel.send(final_text)
             else:
                 final_text = response_message.content
                 conversation_history[user_id].append(
                     {"role": "assistant", "content": final_text}
                 )
-                await message.channel.send(final_text)
+
+                if voice_modes.get(user_id, False):
+                    audio_path = f"response_{user_id}.mp3"
+                    try:
+                        await asyncio.to_thread(
+                            openai_client.generate_speech,
+                            final_text,
+                            audio_path,
+                            response_format="mp3",
+                        )
+                        await message.channel.send(file=discord.File(audio_path))
+                    finally:
+                        if os.path.exists(audio_path):
+                            os.remove(audio_path)
+                else:
+                    await message.channel.send(final_text)
 
     except Exception as e:
         logging.error(f"Error processing message: {e}")
