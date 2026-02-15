@@ -1,0 +1,69 @@
+[
+  {
+    "type": "function",
+    "name": "add_new_task",
+    "description": "Adds Notion task.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "task_name": {"type": "string", "description": "Title."},
+        "status": {"type": "string", "enum": ["Not started", "In progress", "Done"]},
+        "task_types": {"type": "array", "items": {"type": "string"}, "description": "e.g. Work, Personal."},
+        "due_date": {"type": "string", "description": "YYYY-MM-DD."},
+        "description": {"type": "string", "description": "Optional detailed description. Only use for complex tasks. Do NOT ask the user for this if not provided."}
+      },
+      "required": ["task_name"]
+    }
+  },
+{
+  "type": "function",
+  "name": "gather_routine_information",
+  "description": "Gathers Lance's target daily routine information.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "routine_type": {
+        "type": "string",
+        "enum": ["supplements", "skincare", "workouts"],
+        "description": "The specific category of routine to retrieve."
+      },
+      "day_idx": {
+        "type": "integer",
+        "description": "The day of the week (0-6) for which to gather information. Defaults to today."
+      }
+    },
+    "required": ["routine_type"]
+  }
+},
+  {
+    "type": "function",
+    "name": "get_pending_tasks",
+    "description": "Lists non-Done tasks to find page_id.",
+    "parameters": {"type": "object", "properties": {}}
+  },
+  {
+    "type": "function",
+    "name": "mark_task_as_done",
+    "description": "Sets task to Done.",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "page_id": {"type": "string", "description": "Notion page ID."},
+        "task_name": {"type": "string"}
+      },
+      "required": ["page_id"]
+    }
+  },
+  {
+    "type": "function",
+    "name": "aggregate_and_email_tasks",
+    "description": "Emails task summary.",
+    "parameters": {"type": "object", "properties": {}}
+  },
+  {
+    "type": "function",
+    "name": "shutdown_agent",
+    "description": "Ends the conversation and shuts down the agent.",
+    "parameters": {"type": "object", "properties": {}}
+  }
+]

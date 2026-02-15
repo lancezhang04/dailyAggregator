@@ -35,7 +35,6 @@ class OpenAIClient:
         return completion.choices[0].message.parsed
 
     def summarize_tasks(self, tasks: list[dict]) -> str:
-        """Summarizes tasks in a 'Pepper Potts' style, focusing on immediate priorities."""
         if not tasks:
             return "<h1>Daily Update</h1><p>You have no pending tasks at the moment. Enjoy your day!</p>"
 
