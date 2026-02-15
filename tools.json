@@ -70,5 +70,10 @@
     "type": "function",
     "name": "get_current_time",
     "description": "Returns the current local time"
+  },
+  {
+    "type": "function",
+    "name": "get_next_24hr_weather_forecast",
+    "description": "Returns the 24hr local weather forecast."
   }
 ]
