@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from apis.openai_api import OpenAIClient
 from apis.gmail_api import GmailClient
 from apis.notion_api import NotionClient
-from skills.utils import get_next_24hr_weather_forecast
+from skills.utils import get_next_24hr_weather_forecast, get_local_now
 from blueprint_routine.blueprint_skills import gather_routine_information
 
 
@@ -43,17 +43,16 @@ def main():
     tasks = notion_client.get_pending_tasks()
 
     # 4. Generate Message with OpenAI
-    today = datetime.date.today().strftime("%Y-%m-%d, %A")
+    today = get_local_now().strftime("%Y-%m-%d, %A")
 
     system_prompt = (
         "You are Junes, a loyal, casual, and highly capable personal assistant. "
-        "You've been with your boss for a long time, so you speak in a relaxed, warm, and slightly informal tone. "
+        "You've been with your boss for a long time, so you speak in a relaxed, warm, and relatively informal tone. "
         "You are writing a morning note to your boss. "
+        "Do no use Markdown syntax. "
         "Your goal is to provide a brief update on the weather, today's routine (skincare, supplements, workout), "
         "and any TRULY URGENT tasks from Notion. "
-        "Urgent tasks are usually those due today or overdue, but use your judgment. "
-        "Do NOT list every task. Just the ones that need immediate attention. "
-        "Keep it concise, friendly, and human. Not like a mechanical report."
+        "Urgent tasks are usually those due today or overdue, and impending tasks that require lots of work and foresight. "
     )
 
     user_data = f"""

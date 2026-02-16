@@ -9,7 +9,7 @@ source ~/miniconda3/etc/profile.d/conda.sh
 conda activate junes
 
 # Navigate to the routine folder
-cd ~/lancezhang04/junes/routine
+cd ~/junes/routines
 
 # Run the morning routine script
 python morning.py
