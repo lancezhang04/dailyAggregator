@@ -27,9 +27,10 @@
         "enum": ["supplements", "skincare", "workouts"],
         "description": "The specific category of routine to retrieve."
       },
-      "day_idx": {
-        "type": "integer",
-        "description": "The day of the week (0-6) for which to gather information. Defaults to today."
+      "day_of_week": {
+        "type": "string",
+        "enum": ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"],
+        "description": "The day of the week for which to gather information. Defaults to today."
       }
     },
     "required": ["routine_type"]

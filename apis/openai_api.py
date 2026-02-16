@@ -6,6 +6,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 
 from models.task import NotionTask
+from skills.utils import get_local_now
 
 load_dotenv()
 
@@ -27,7 +28,7 @@ class OpenAIClient:
         messages: List[Dict[str, Any]] = [
             {
                 "role": "system",
-                "content": f"You are a helpful assistant that extracts task details. Today is {date.today()}",
+                "content": f"You are a helpful assistant that extracts task details. Today is {get_local_now().date()}",
             },
             {"role": "user", "content": text},
         ]

@@ -2,10 +2,10 @@ main: >
   Lance is targeting a rigorous workout schedule that includes both cardio and strength training. 
   The ultimate goal is longevity through increasing muscles mass, VO2 max, and mitochondrial efficiency. 
 
-0: "Monday routine: push day, 30-minute zone 2"
-1: "Tuesday routine: pull day, 30-minute zone 2"
-2: "Wednesday routine: leg day, full-body stretches"
-3: "Thursday routine: upper body, 45-minute zone 2"
-4: "Friday routine: lower body, full body-stretches"
-5: "Saturday routine: zone 5 cardio. Norwegian 4x4 after thorough workout"
-6: "Sunday routine: rest day, finally"
+monday: "Monday routine: push day, 30-minute zone 2"
+tuesday: "Tuesday routine: pull day, 30-minute zone 2"
+wednesday: "Wednesday routine: leg day, full-body stretches"
+thursday: "Thursday routine: upper body, 45-minute zone 2"
+friday: "Friday routine: lower body, full body-stretches"
+saturday: "Saturday routine: zone 5 cardio. Norwegian 4x4 after thorough workout"
+sunday: "Sunday routine: rest day, finally"

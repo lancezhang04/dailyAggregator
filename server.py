@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 # Import existing clients and skills
 from apis.openai_api import OpenAIClient
 import skills
+from skills.utils import get_local_now
 
 # Load environment variables
 load_dotenv()
@@ -54,7 +55,7 @@ def load_agent_config():
         instructions = f.read()
 
     # Replace placeholder
-    current_date = datetime.datetime.now()
+    current_date = get_local_now()
     instructions = instructions.replace(
         "{{today}}",
         f"{current_date.strftime('%Y-%m-%d')}, {current_date.strftime('%A')}",
@@ -64,13 +65,13 @@ def load_agent_config():
 
 # Global config state
 TOOLS, INSTRUCTIONS = load_agent_config()
-LAST_CONFIG_UPDATE = date.today()
+LAST_CONFIG_UPDATE = get_local_now().date()
 
 
 def refresh_config_if_needed():
     """Updates the global instructions if the day has changed."""
     global TOOLS, INSTRUCTIONS, LAST_CONFIG_UPDATE
-    today = date.today()
+    today = get_local_now().date()
     if today != LAST_CONFIG_UPDATE:
         logging.info(f"Day changed to {today}. Refreshing agent configuration...")
         TOOLS, INSTRUCTIONS = load_agent_config()
@@ -87,6 +88,29 @@ def refresh_config_if_needed():
 
 # Simple in-memory conversation history: {user_id: [messages]}
 conversation_history = {}
+
+
+def truncate_history(history, max_messages=21):
+    if len(history) <= max_messages:
+        return history
+
+    # Keep the system message
+    system_message = history[0]
+    recent_messages = history[-(max_messages - 1) :]
+
+    # Ensure we don't start with a 'tool' message, as it must follow an 'assistant' message with 'tool_calls'
+    while recent_messages and recent_messages[0].get("role") == "tool":
+        recent_messages.pop(0)
+
+    # If the first message is an assistant message with tool_calls, it's fine.
+    # But if the LAST message in the truncated part was an assistant message with tool_calls
+    # that we just cut off from its tool responses, that's also bad for the NEXT message.
+    # However, truncation happens BEFORE the new API call, so we just need to ensure
+    # the history we SEND to OpenAI is valid.
+
+    # Re-check length if we popped messages
+    return [system_message] + recent_messages
+
 
 # Voice mode state: {user_id: bool}
 voice_modes = {}
@@ -139,11 +163,8 @@ async def process_response(message, user_text: str):
     # Add user message to history
     conversation_history[user_id].append({"role": "user", "content": user_text})
 
-    # Keep history manageable (last 20 messages)
-    if len(conversation_history[user_id]) > 21:
-        conversation_history[user_id] = [
-            conversation_history[user_id][0]
-        ] + conversation_history[user_id][-20:]
+    # Keep history manageable
+    conversation_history[user_id] = truncate_history(conversation_history[user_id])
 
     try:
         async with message.channel.typing():
@@ -159,7 +180,23 @@ async def process_response(message, user_text: str):
 
             # Handle tool calls
             if response_message.tool_calls:
-                conversation_history[user_id].append(response_message)
+                # Convert to dict for consistent history storage
+                assistant_msg = {
+                    "role": "assistant",
+                    "content": response_message.content,
+                    "tool_calls": [
+                        {
+                            "id": tc.id,
+                            "type": tc.type,
+                            "function": {
+                                "name": tc.function.name,
+                                "arguments": tc.function.arguments,
+                            },
+                        }
+                        for tc in response_message.tool_calls
+                    ],
+                }
+                conversation_history[user_id].append(assistant_msg)
 
                 for tool_call in response_message.tool_calls:
                     function_name = tool_call.function.name

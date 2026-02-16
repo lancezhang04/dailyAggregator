@@ -22,6 +22,7 @@ except ImportError:
 from dotenv import load_dotenv
 
 from skills import *
+from skills.utils import get_local_now
 
 # Load environment variables
 load_dotenv()
@@ -45,7 +46,7 @@ def load_config():
             instructions = f.read()
 
         # Replace placeholders
-        current_date = datetime.datetime.now()
+        current_date = get_local_now()
         instructions = instructions.replace(
             "{{today}}",
             f"{current_date.strftime('%Y-%m-%d')}, {current_date.strftime('%A')}",
@@ -64,11 +65,11 @@ async def send_audio(ws, stream, state):
 
     print("Microphone active. Speak now...")
     try:
-        last_instructions_update = datetime.date.today()
+        last_instructions_update = get_local_now().date()
 
         while not state.get("should_shutdown"):
             # Check if we need to update instructions (day change)
-            today = datetime.date.today()
+            today = get_local_now().date()
             if today != last_instructions_update:
                 print(
                     f"\n--- Day changed to {today}. Updating session instructions... ---"

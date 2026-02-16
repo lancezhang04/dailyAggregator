@@ -1,2 +1,12 @@
 main: >
-  Lance is being lazy and hasn't added this routine yet. Please remind him to do so, admonishingly.
+  Lance's skincare routine is split into morning and night portions. The morning portion includes 
+  Cleanser, antioxidant, moisturizer, and sunscreen. The night portion rotates based on the day of week. 
+  This is a new routine and in its introduction phase. 
+
+monday: For Monday nights, Lance uses cleanser -> moisturizer -> adapalene -> moisturizer again.
+tuesday: For Tuesday nights, Lance uses cleanser -> moisturizer (recovery day).
+wednesday: For Wednesday nights, Lance uses cleanser -> mandelic acid -> wait for 3 minutes -> moisturizer. Skip this step until the week of 3/2.
+thursday: For Thursday nights, Lance uses cleanser -> moisturizer -> adapalene -> moisturizer again.
+friday: For Friday nights, Lance uses cleanser -> moisturizer (recovery day).
+saturday: For Saturday nights, Lance uses cleanser -> moisturizer -> adapalene -> moisturizer again.
+sunday: For Sunday nights, Lance uses cleanser -> moisturizer (recovery day).

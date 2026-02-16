@@ -1,12 +1,17 @@
-from datetime import datetime
+from datetime import datetime, date
 from zoneinfo import ZoneInfo
 
 import os
 import requests
 
 
+def get_local_now() -> datetime:
+    """Returns the current datetime in the local timezone."""
+    return datetime.now(ZoneInfo(os.environ.get("LOCAL_TIMEZONE", "UTC")))
+
+
 def get_current_time() -> str:
-    local_time = datetime.now(ZoneInfo(os.environ["LOCAL_TIMEZONE"]))
+    local_time = get_local_now()
     return local_time.strftime("%Y-%m-%d %H:%M:%S")
 
 
