@@ -1,12 +1,13 @@
 import os
 from apis.gmail_api import GmailClient
 from apis.notion_api import NotionClient
-from apis.openai_api import OpenAIClient
 from tools.task_aggregator import TaskAggregator
 
 
 def aggregate_and_email_tasks():
     """Fetches pending tasks from Notion, summarizes them, and emails the report."""
+    from apis.openai_api import OpenAIClient
+
     openai_client = OpenAIClient()
     notion_client = NotionClient()
     gmail_client = GmailClient()

@@ -1,5 +1,4 @@
 from apis.notion_api import NotionClient
-from apis.openai_api import OpenAIClient
 from apis.gmail_api import GmailClient
 
 
@@ -7,7 +6,7 @@ class TaskAggregator:
     def __init__(
         self,
         notion_client: NotionClient,
-        openai_client: OpenAIClient,
+        openai_client,
         gmail_client: GmailClient,
     ):
         self.notion_client = notion_client

@@ -1,13 +1,14 @@
 import os
 from datetime import datetime
 from apis.notion_api import NotionClient
-from apis.openai_api import OpenAIClient
 from tools.recorder import AudioRecorder
 from models.task import NotionTask
 
 
 def record_and_add_task():
     """Records audio, transcribes it, extracts a task, and adds it to Notion."""
+    from apis.openai_api import OpenAIClient
+
     recorder = AudioRecorder()
     openai_client = OpenAIClient()
     notion_client = NotionClient()
