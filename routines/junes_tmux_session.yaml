@@ -1,0 +1,10 @@
+session_name: junes
+windows:
+  - window_name: junes_server
+    layout: even-horizontal
+    panes:
+      - shell_command:
+          - cmd: source /home/lancezhang04/miniconda3/etc/profile.d/conda.sh
+          - cmd: conda activate junes
+          - cmd: cd /home/lancezhang04/junes/
+          - cmd: python server.py

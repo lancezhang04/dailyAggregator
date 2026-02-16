@@ -15,6 +15,33 @@ from skills.utils import get_next_24hr_weather_forecast, get_local_now
 from blueprint_routine.blueprint_skills import gather_routine_information
 
 
+async def send_discord_message(token, user_id, content):
+    """Sends a message to a Discord user via DM."""
+    import discord
+    from discord.ext import commands
+
+    intents = discord.Intents.default()
+    bot = commands.Bot(command_prefix="!", intents=intents)
+
+    @bot.event
+    async def on_ready():
+        try:
+            user = await bot.fetch_user(int(user_id))
+            if user:
+                # Add the @ mention at the top
+                full_content = f"<@{user_id}>\n\n{content}"
+                await user.send(full_content)
+                print(f"Discord message sent to {user.name}.")
+            else:
+                print(f"Error: Could not find Discord user with ID {user_id}")
+        except Exception as e:
+            print(f"Error sending Discord message: {e}")
+        finally:
+            await bot.close()
+
+    await bot.start(token)
+
+
 def main():
     # Load environment variables from the root directory
     load_dotenv(dotenv_path=root_dir / ".env")
@@ -48,7 +75,7 @@ def main():
     system_prompt = (
         "You are Junes, a loyal, casual, and highly capable personal assistant. "
         "You've been with your boss for a long time, so you speak in a relaxed, warm, and relatively informal tone. "
-        "You are writing a morning note to your boss. "
+        "You are sending a morning text to your boss. "
         "Do no use Markdown syntax. "
         "Your goal is to provide a brief update on the weather, today's routine (skincare, supplements, workout), "
         "and any TRULY URGENT tasks from Notion. "
@@ -83,10 +110,22 @@ Pending Notion Tasks:
     note_content = response.choices[0].message.content
 
     # 5. Send Email
-    subject = f"Good morning! Your note for {today}"
+    subject = f"Junes' note for {today}"
     gmail_client.send_email(to=recipient_email, subject=subject, content=note_content)
 
     print(f"Morning routine email sent to {recipient_email}.")
+
+    # 6. Send Discord Message
+    discord_token = os.getenv("DISCORD_BOT_TOKEN")
+    discord_user_id = os.getenv("DISCORD_AUTHORIZED_USER_ID")
+    if discord_token and discord_user_id:
+        import asyncio
+
+        asyncio.run(send_discord_message(discord_token, discord_user_id, note_content))
+    else:
+        print(
+            "Skipping Discord message: DISCORD_BOT_TOKEN or DISCORD_AUTHORIZED_USER_ID not set."
+        )
 
 
 if __name__ == "__main__":
