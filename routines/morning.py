@@ -1,5 +1,6 @@
 import sys
 import os
+import asyncio
 from pathlib import Path
 import datetime
 
@@ -18,28 +19,44 @@ from blueprint_routine.blueprint_skills import gather_routine_information
 async def send_discord_message(token, user_id, content):
     """Sends a message to a Discord user via DM."""
     import discord
-    from discord.ext import commands
 
     intents = discord.Intents.default()
-    bot = commands.Bot(command_prefix="!", intents=intents)
-
-    @bot.event
-    async def on_ready():
+    async with discord.Client(intents=intents) as client:
         try:
-            user = await bot.fetch_user(int(user_id))
-            if user:
-                # Add the @ mention at the top
-                full_content = f"<@{user_id}>\n\n{content}"
-                await user.send(full_content)
-                print(f"Discord message sent to {user.name}.")
-            else:
-                print(f"Error: Could not find Discord user with ID {user_id}")
-        except Exception as e:
-            print(f"Error sending Discord message: {e}")
-        finally:
-            await bot.close()
+            # We need to login and start the client to be able to fetch user
+            # But discord.Client as a context manager handles cleanup.
+            # However, fetch_user needs the client to be logged in.
 
-    await bot.start(token)
+            # Use a task to handle the actual work once ready
+            ready_event = asyncio.Event()
+
+            @client.event
+            async def on_ready():
+                ready_event.set()
+
+            # Start client in a task
+            client_task = asyncio.create_task(client.start(token))
+
+            # Wait for ready
+            try:
+                await asyncio.wait_for(ready_event.wait(), timeout=30)
+                user = await client.fetch_user(int(user_id))
+                if user:
+                    full_content = f"<@{user_id}>\n\n{content}"
+                    await user.send(full_content)
+                    print(f"Discord message sent to {user.name}.")
+                else:
+                    print(f"Error: Could not find Discord user with ID {user_id}")
+            except asyncio.TimeoutError:
+                print("Error: Discord client timed out waiting to be ready.")
+            except Exception as e:
+                print(f"Error during Discord message sending: {e}")
+            finally:
+                # Stop the client
+                await client.close()
+                await client_task
+        except Exception as e:
+            print(f"Error in send_discord_message: {e}")
 
 
 def main():
