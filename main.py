@@ -2,7 +2,6 @@ import asyncio
 import base64
 import json
 import time
-import datetime
 import os
 
 try:
@@ -28,7 +27,7 @@ from skills.utils import get_local_now
 load_dotenv()
 
 # Realtime API configuration
-MODEL = "gpt-4o-realtime-preview"
+MODEL = "gpt-realtime"
 URL = f"wss://api.openai.com/v1/realtime?model={MODEL}"
 
 # Audio configuration

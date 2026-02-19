@@ -14,13 +14,13 @@ load_dotenv()
 class OpenAIClient:
     def __init__(self, api_key: str = None, model: str = None):
         self.api_key = api_key or os.getenv("OPENAI_API_KEY")
-        self.model = model or os.getenv("OPENAI_MODEL", "gpt-4o")
+        self.model = model or os.getenv("OPENAI_MODEL", "gpt-5.1")
         self.client = OpenAI(api_key=self.api_key)
 
     def transcribe_audio(self, file_path: str):
         with open(file_path, "rb") as audio_file:
             return self.client.audio.transcriptions.create(
-                model="gpt-4o-transcribe",  # As per original code
+                model="gpt-audio",  # As per original code
                 file=audio_file,
             ).text
 
