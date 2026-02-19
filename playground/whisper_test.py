@@ -8,7 +8,7 @@ def transcribe_audio(client):
     audio_file = open("output.wav", "rb")
 
     return client.audio.transcriptions.create(
-        model="gpt-audio",
+        model="whisper-1",
         file=audio_file,
     ).text
 

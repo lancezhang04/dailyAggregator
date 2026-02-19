@@ -20,7 +20,7 @@ class OpenAIClient:
     def transcribe_audio(self, file_path: str):
         with open(file_path, "rb") as audio_file:
             return self.client.audio.transcriptions.create(
-                model="gpt-audio",
+                model="whisper-1",
                 file=audio_file,
             ).text
 
