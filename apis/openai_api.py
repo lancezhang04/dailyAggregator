@@ -1,5 +1,4 @@
 import os
-from datetime import date
 from typing import List, Dict, Any
 
 import numpy as np
@@ -98,6 +97,6 @@ class OpenAIClient:
         """Embeds text using OpenAI embeddings."""
         response = self.client.embeddings.create(
             input=text,
-            model=os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
+            model=os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-large"),
         )
         return np.array([d.embedding for d in response.data])

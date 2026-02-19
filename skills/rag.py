@@ -5,7 +5,6 @@ import numpy as np
 from dotenv import load_dotenv
 
 from apis.openai_api import OpenAIClient
-from skills import SKILLS_MAP
 
 load_dotenv()
 
@@ -60,8 +59,10 @@ class ToolsRAG:
 
         print("Cannot find tool vectors file, generating new vectors...")
         with open(self.tools_file_path, "r") as f:
-            tools = json.load(f)
-        tools = [f"{t['name']} - {t['description']}" for t in tools]
+            tools_descriptions = json.load(f)
+        tools_descriptions = [
+            f"{t['name']} - {t['description']}" for t in tools_descriptions
+        ]
 
-        self.tool_vectors = self.client.embed_text(tools)
+        self.tool_vectors = self.client.embed_text(tools_descriptions)
         np.save(self.vectors_file_path, self.tool_vectors)
