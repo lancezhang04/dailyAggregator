@@ -11,7 +11,7 @@ An intelligent executive assistant that manages tasks in Notion and sends daily 
 2. Configure environment variables in `.env`.
 3. Run the local agent:
    ```bash
-   python main.py
+   python real-time.py
    ```
 4. Run the Discord bot server:
    ```bash

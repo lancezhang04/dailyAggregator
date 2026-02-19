@@ -2,6 +2,7 @@ import os
 from datetime import date
 from typing import List, Dict, Any
 
+import numpy as np
 from dotenv import load_dotenv
 from openai import OpenAI
 
@@ -20,7 +21,7 @@ class OpenAIClient:
     def transcribe_audio(self, file_path: str):
         with open(file_path, "rb") as audio_file:
             return self.client.audio.transcriptions.create(
-                model="gpt-audio",  # As per original code
+                model="gpt-audio",
                 file=audio_file,
             ).text
 
@@ -92,3 +93,11 @@ class OpenAIClient:
             response_format=response_format,
         )
         response.write_to_file(output_path)
+
+    def embed_text(self, text: str | list[str]) -> np.ndarray:
+        """Embeds text using OpenAI embeddings."""
+        response = self.client.embeddings.create(
+            input=text,
+            model=os.environ.get("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small"),
+        )
+        return np.array([d.embedding for d in response.data])

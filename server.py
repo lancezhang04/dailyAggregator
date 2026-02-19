@@ -4,13 +4,12 @@ import discord
 from discord.ext import commands
 import logging
 import json
-import datetime
-from datetime import date
 from dotenv import load_dotenv
 
 # Import existing clients and skills
 from apis.openai_api import OpenAIClient
 import skills
+from skills.rag import ToolsRAG
 from skills.utils import get_local_now
 
 # Load environment variables
@@ -28,6 +27,7 @@ AUTHORIZED_USER_IDS = [int(i.strip()) for i in AUTHORIZED_USER_IDS if i.strip()]
 
 # Initialize OpenAI Client
 openai_client = OpenAIClient()
+tools_rag = ToolsRAG()
 
 
 # Load tools and instructions
@@ -172,7 +172,7 @@ async def process_response(message, user_text: str):
             response = openai_client.client.chat.completions.create(
                 model=openai_client.model,
                 messages=conversation_history[user_id],
-                tools=TOOLS,
+                tools=tools_rag.retrieve_tools_from_description(user_text),
                 tool_choice="auto",
             )
 
